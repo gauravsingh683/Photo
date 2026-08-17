@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import util from 'util';
@@ -17,6 +17,18 @@ export async function captureDSLRPhoto(outputDir: string): Promise<string> {
     if (fs.existsSync('C:\\Program Files (x86)\\digiCamControl\\CameraControlCmd.exe')) {
        console.log('Triggering DSLR...');
        await execAsync(`${cmdPath} /capture /filename "${outputPath}"`);
+
+       // --- 90 DEGREES ROTATION ON WINDOWS ---
+       try {
+         console.log('Rotating captured image 90 degrees...');
+         const winPath = execSync(`wslpath -w "${outputPath}"`).toString().trim();
+         const rotateCmd = `powershell.exe -Command "[Reflection.Assembly]::LoadWithPartialName('System.Drawing'); $img = [System.Drawing.Image]::FromFile('${winPath}'); $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate90FlipNone); $img.Save('${winPath}'); $img.Dispose();"`;
+         await execAsync(rotateCmd);
+         console.log('Image rotated successfully:', winPath);
+       } catch (rotateErr: any) {
+         console.error('Failed to rotate captured image:', rotateErr.message);
+       }
+
        return filename;
     } else {
        throw new Error('digiCamControl is not installed. DSLR cannot be triggered.');

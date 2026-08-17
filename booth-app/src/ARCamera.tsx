@@ -121,9 +121,12 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
       
       if (!canvasCtx || !offCtx || !canvasRef.current || !offscreenCanvasRef.current) return;
       
-      if (canvasRef.current!.width !== results.image.width) {
-        canvasRef.current!.width = results.image.width;
-        canvasRef.current!.height = results.image.height;
+      const targetWidth = results.image.height;
+      const targetHeight = results.image.width;
+      
+      if (canvasRef.current!.width !== targetWidth) {
+        canvasRef.current!.width = targetWidth;
+        canvasRef.current!.height = targetHeight;
         offscreenCanvasRef.current.width = results.image.width;
         offscreenCanvasRef.current.height = results.image.height;
       }
@@ -131,12 +134,16 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
       canvasCtx.save();
       // Mirror image
       canvasCtx.scale(-1, 1);
-      canvasCtx.translate(-canvasRef.current!.width, 0);
+      canvasCtx.translate(-targetWidth, 0);
+
+      // Rotate 90 degrees clockwise
+      canvasCtx.translate(targetWidth / 2, targetHeight / 2);
+      canvasCtx.rotate(90 * Math.PI / 180);
 
       // Draw base image with filter
       const currentFilter = filterRef.current;
       canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
-      canvasCtx.drawImage(results.image, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
+      canvasCtx.drawImage(results.image, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
       
       // Face Smoothing
       if (results.multiFaceLandmarks && (currentFilter.includes('brightness') || currentFilter.includes('blur'))) {
@@ -221,15 +228,28 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
             // Fast path: bypass ML inference and draw directly
             const canvasCtx = canvasRef.current?.getContext('2d');
             if (canvasCtx && canvasRef.current) {
-              if (canvasRef.current.width !== video.videoWidth) {
-                canvasRef.current.width = video.videoWidth;
-                canvasRef.current.height = video.videoHeight;
+              const targetWidth = video.videoHeight;
+              const targetHeight = video.videoWidth;
+              
+              if (canvasRef.current.width !== targetWidth || canvasRef.current.height !== targetHeight) {
+                canvasRef.current.width = targetWidth;
+                canvasRef.current.height = targetHeight;
               }
+              
               canvasCtx.save();
+              canvasCtx.clearRect(0, 0, targetWidth, targetHeight);
+              
+              // Mirror the image horizontally
               canvasCtx.scale(-1, 1);
-              canvasCtx.translate(-canvasRef.current.width, 0);
+              canvasCtx.translate(-targetWidth, 0);
+              
+              // Rotate 90 degrees clockwise
+              canvasCtx.translate(targetWidth / 2, targetHeight / 2);
+              canvasCtx.rotate(90 * Math.PI / 180);
+              
               canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
-              canvasCtx.drawImage(video, 0, 0, canvasRef.current.width, canvasRef.current.height);
+              canvasCtx.drawImage(video, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
+              
               canvasCtx.restore();
             }
           }
