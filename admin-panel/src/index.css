@@ -1,0 +1,87 @@
+:root {
+  --sidebar-width: 210px;
+  --main-padding: 50px;
+  --h1-size: 2.5rem;
+  --card-padding: 30px;
+  --card-title-size: 1.5rem;
+  --card-grid-min: 300px;
+  --stat-value-size: 3rem;
+  --sidebar-padding: 24px 15px;
+  --logo-padding: 12px 20px;
+  --nav-padding: 12px 14px;
+  --nav-gap: 10px;
+  --auth-padding: 50px 40px;
+  --nav-font-size: 0.82rem;
+  --nav-icon-size: 1.05rem;
+  --admin-name-size: 0.8rem;
+  --admin-role-size: 0.68rem;
+  --logo-width: 92%;
+  --footer-padding: 15px;
+  --footer-card-padding: 12px 15px;
+  --footer-card-gap: 12px;
+  --avatar-size: 36px;
+  --body-text-base: 1rem;
+  --body-text-large: 1.2rem;
+  --body-text-small: 0.9rem;
+  --body-text-xs: 0.8rem;
+}
+
+@media (max-width: 1440px) {
+  :root {
+    --sidebar-width: 170px;
+    --main-padding: 30px;
+    --h1-size: 2rem;
+    --card-padding: 20px;
+    --card-title-size: 1.3rem;
+    --card-grid-min: 250px;
+    --stat-value-size: 2.4rem;
+    --sidebar-padding: 18px 10px;
+    --logo-padding: 8px 12px;
+    --nav-padding: 10px 8px;
+    --nav-gap: 6px;
+    --nav-font-size: 0.72rem;
+    --nav-icon-size: 0.9rem;
+    --admin-name-size: 0.72rem;
+    --admin-role-size: 0.62rem;
+    --logo-width: 86%;
+    --footer-padding: 10px;
+    --footer-card-padding: 8px 10px;
+    --footer-card-gap: 8px;
+    --avatar-size: 28px;
+    --body-text-base: 0.85rem;
+    --body-text-large: 1.05rem;
+    --body-text-small: 0.78rem;
+    --body-text-xs: 0.7rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 130px;
+    --main-padding: 20px;
+    --h1-size: 1.6rem;
+    --card-padding: 16px;
+    --card-title-size: 1.1rem;
+    --card-grid-min: 200px;
+    --stat-value-size: 2rem;
+    --sidebar-padding: 12px 6px;
+    --logo-padding: 6px 8px;
+    --nav-padding: 8px 4px;
+    --nav-gap: 4px;
+    --nav-font-size: 0.62rem;
+    --nav-icon-size: 0.8rem;
+    --admin-name-size: 0.64rem;
+    --admin-role-size: 0.58rem;
+    --logo-width: 80%;
+    --footer-padding: 8px;
+    --footer-card-padding: 6px 4px;
+    --footer-card-gap: 4px;
+    --avatar-size: 24px;
+    --body-text-base: 0.75rem;
+    --body-text-large: 0.9rem;
+    --body-text-small: 0.7rem;
+    --body-text-xs: 0.62rem;
+  }
+}
+
+html, body, #root { margin: 0; padding: 0; width: 100%; height: 100%; box-sizing: border-box; font-family: "Outfit", sans-serif; }
