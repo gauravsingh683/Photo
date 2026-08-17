@@ -239,15 +239,18 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
                 canvasCtx.save();
                 canvasCtx.clearRect(0, 0, targetWidth, targetHeight);
                 
-                // Mirror the image horizontally
-                canvasCtx.scale(-1, 1);
-                canvasCtx.translate(-targetWidth, 0);
+                // Translate to center of canvas
+                canvasCtx.translate(targetWidth / 2, targetHeight / 2);
                 
                 // Rotate 90 degrees clockwise
-                canvasCtx.translate(targetWidth / 2, targetHeight / 2);
                 canvasCtx.rotate(90 * Math.PI / 180);
                 
+                // Mirror horizontally (relative to rotated preview frame)
+                canvasCtx.scale(-1, 1);
+                
                 canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
+                
+                // Draw video centered at origin
                 canvasCtx.drawImage(video, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
                 
                 canvasCtx.restore();
