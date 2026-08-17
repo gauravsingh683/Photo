@@ -23,10 +23,6 @@ export async function captureDSLRPhoto(outputDir: string): Promise<string> {
     }
   } catch (error: any) {
     console.error('DSLR Capture Error:', error.message);
-    
-    // Fallback behavior: Generate a dummy image so the UI can proceed during testing
-    console.log('Using Fallback Camera Mode...');
-    fs.writeFileSync(outputPath, 'Mock Image Data (DSLR Disconnected)');
-    return filename;
+    throw new Error('DSLR Disconnected. Please plug in the DSLR camera and verify digiCamControl is running.');
   }
 }

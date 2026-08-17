@@ -993,29 +993,16 @@ function App() {
             return newImages;
           }
         });
-        return;
+      } else {
+        const errMsg = data.error || 'DSLR Disconnected. Please plug in the DSLR camera and verify digiCamControl is running.';
+        console.error("DSLR Capture error from backend:", errMsg);
+        alert(`Hardware Error: ${errMsg}`);
+        setAppState('CAMERA');
       }
-    } catch (err) {
-      console.error("DSLR Capture failed, falling back to webcam...", err);
-    }
-
-    // Fallback: use webcam screenshot if DSLR capture fails
-    const image = webcamRef.current?.getScreenshot();
-    if (image) {
-      setImagesSrc(prev => {
-        const newImages = [...prev, image];
-        if (newImages.length < captureMode) {
-          setCurrentShot(newImages.length);
-          setCountdown(5);
-          setAppState('CAMERA');
-          return newImages;
-        } else {
-          setAppState('PREVIEW');
-          return newImages;
-        }
-      });
-    } else {
-      setAppState('PREVIEW');
+    } catch (err: any) {
+      console.error("DSLR Capture API call failed:", err);
+      alert(`Hardware Connection Error: Failed to communicate with DSLR capture server. Make sure the backend server is running.`);
+      setAppState('CAMERA');
     }
   }, [webcamRef, captureMode]);
 
