@@ -219,8 +219,7 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
           if (video.paused) {
             video.play().catch(e => console.error("Error playing video:", e));
           }
-          const currentFilter = filterRef.current;
-          const needsBeauty = currentFilter.includes('brightness') || currentFilter.includes('blur');
+          const needsBeauty = false; // Disabled FaceMesh to prevent CPU lag and support 90-degree camera rotation
           
           if (needsBeauty && isFaceMeshLoadedRef.current && faceMeshRef.current) {
             await faceMeshRef.current.send({ image: video });
