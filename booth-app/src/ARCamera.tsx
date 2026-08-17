@@ -230,31 +230,33 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
               const targetWidth = video.videoHeight;
               const targetHeight = video.videoWidth;
               
-              if (canvasRef.current.width !== targetWidth || canvasRef.current.height !== targetHeight) {
-                canvasRef.current.width = targetWidth;
-                canvasRef.current.height = targetHeight;
+              if (targetWidth > 0 && targetHeight > 0) {
+                if (canvasRef.current.width !== targetWidth || canvasRef.current.height !== targetHeight) {
+                  canvasRef.current.width = targetWidth;
+                  canvasRef.current.height = targetHeight;
+                }
+                
+                canvasCtx.save();
+                canvasCtx.clearRect(0, 0, targetWidth, targetHeight);
+                
+                // Mirror the image horizontally
+                canvasCtx.scale(-1, 1);
+                canvasCtx.translate(-targetWidth, 0);
+                
+                // Rotate 90 degrees clockwise
+                canvasCtx.translate(targetWidth / 2, targetHeight / 2);
+                canvasCtx.rotate(90 * Math.PI / 180);
+                
+                canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
+                canvasCtx.drawImage(video, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
+                
+                canvasCtx.restore();
+  
+                // Draw debug indicator in screen coordinates
+                canvasCtx.fillStyle = "#ff0000";
+                canvasCtx.font = "bold 24px monospace";
+                canvasCtx.fillText("DEBUG: Rotated 90 deg", 20, 40);
               }
-              
-              canvasCtx.save();
-              canvasCtx.clearRect(0, 0, targetWidth, targetHeight);
-              
-              // Mirror the image horizontally
-              canvasCtx.scale(-1, 1);
-              canvasCtx.translate(-targetWidth, 0);
-              
-              // Rotate 90 degrees clockwise
-              canvasCtx.translate(targetWidth / 2, targetHeight / 2);
-              canvasCtx.rotate(90 * Math.PI / 180);
-              
-              canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
-              canvasCtx.drawImage(video, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
-              
-              canvasCtx.restore();
-
-              // Draw debug indicator in screen coordinates
-              canvasCtx.fillStyle = "#ff0000";
-              canvasCtx.font = "bold 24px monospace";
-              canvasCtx.fillText("DEBUG: Rotated 90 deg", 20, 40);
             }
           }
         }

@@ -34,6 +34,11 @@ function createWindow() {
     console.log('User attempted to close window');
   });
 
+  // Enable Ctrl+R to reload ignoring cache (for testing/updating purposes)
+  globalShortcut.register('CommandOrControl+R', () => {
+    mainWindow.webContents.reloadIgnoringCache();
+  });
+
   // Ensure fullscreen stays active
   mainWindow.on('leave-full-screen', () => {
     mainWindow.setFullScreen(true);
