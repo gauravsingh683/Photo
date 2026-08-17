@@ -250,6 +250,11 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
               canvasCtx.drawImage(video, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
               
               canvasCtx.restore();
+
+              // Draw debug indicator in screen coordinates
+              canvasCtx.fillStyle = "#ff0000";
+              canvasCtx.font = "bold 24px monospace";
+              canvasCtx.fillText("DEBUG: Rotated 90 deg", 20, 40);
             }
           }
         }

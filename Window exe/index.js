@@ -24,8 +24,10 @@ function createWindow() {
   // Remove the default menu completely
   Menu.setApplicationMenu(null);
 
-  // Load the React Photo Booth frontend from production domain
-  mainWindow.loadURL('https://photobooth.woodcliff.co.in/');
+  // Clear cache on launch to ensure the latest frontend updates are loaded
+  mainWindow.webContents.session.clearCache().then(() => {
+    mainWindow.loadURL('https://photobooth.woodcliff.co.in/');
+  });
 
   // Block basic shortcuts to prevent user escape
   globalShortcut.register('CommandOrControl+W', () => {
