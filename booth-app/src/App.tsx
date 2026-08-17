@@ -907,7 +907,7 @@ function App() {
       alert("Failed to fetch print configuration or capture image.");
     }
   };
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(5);
   const [imagesSrc, setImagesSrc] = useState<string[]>([]);
   const [captureMode, setCaptureMode] = useState<number>(1);
   const [currentShot, setCurrentShot] = useState<number>(0);
@@ -973,14 +973,40 @@ function App() {
     }
   }, [appState, hardwareId]);
 
-  const capture = useCallback(() => {
+  const capture = useCallback(async () => {
+    setAppState('PROCESSING'); // Show processing state while DSLR is capturing
+    try {
+      console.log("Triggering backend DSLR capture...");
+      const res = await fetch('/api/hardware/capture', { method: 'POST' });
+      const data = await res.json();
+      if (data.success && data.url) {
+        const dslrImageUrl = data.url;
+        setImagesSrc(prev => {
+          const newImages = [...prev, dslrImageUrl];
+          if (newImages.length < captureMode) {
+            setCurrentShot(newImages.length);
+            setCountdown(5);
+            setAppState('CAMERA');
+            return newImages;
+          } else {
+            setAppState('PREVIEW');
+            return newImages;
+          }
+        });
+        return;
+      }
+    } catch (err) {
+      console.error("DSLR Capture failed, falling back to webcam...", err);
+    }
+
+    // Fallback: use webcam screenshot if DSLR capture fails
     const image = webcamRef.current?.getScreenshot();
     if (image) {
       setImagesSrc(prev => {
         const newImages = [...prev, image];
         if (newImages.length < captureMode) {
           setCurrentShot(newImages.length);
-          setCountdown(3);
+          setCountdown(5);
           setAppState('CAMERA');
           return newImages;
         } else {
@@ -993,10 +1019,8 @@ function App() {
     }
   }, [webcamRef, captureMode]);
 
-  
-
   const startCountdown = () => {
-    setCountdown(3);
+    setCountdown(5);
     setAppState('COUNTDOWN');
   };
 
@@ -1099,14 +1123,14 @@ function App() {
         <div style={{ textAlign: 'center', zIndex: 10 }}>
           <h2 style={{ fontSize: '3rem', marginBottom: '40px', fontWeight: '800', color: '#333' }}>Choose Your Layout</h2>
           <div style={{ display: 'flex', gap: '40px', justifyContent: 'center' }}>
-              <div onClick={() => { setCaptureMode(1); setSelectedFrame(FRAMES.find(f => !f.layout || f.layout === 'single') || FRAMES[0]); setImagesSrc([]); setCurrentShot(0); setCountdown(3); setAppState('CAMERA'); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform='scale(1)'}>
+              <div onClick={() => { setCaptureMode(1); setSelectedFrame(FRAMES.find(f => !f.layout || f.layout === 'single') || FRAMES[0]); setImagesSrc([]); setCurrentShot(0); setCountdown(5); setAppState('CAMERA'); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform='scale(1)'}>
                 <div style={{ width: '140px', height: '180px', backgroundColor: '#e0e0e0', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', border: '3px solid #ccc' }}>
                    <div style={{ width: '120px', height: '160px', backgroundColor: '#fff', borderRadius: '5px' }}></div>
                 </div>
                 <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#4a4a4a' }}>Single Selfie</span>
               </div>
 
-              <div onClick={() => { setCaptureMode(3); setSelectedFrame(FRAMES.find(f => f.id === 'f_none') || FRAMES[0]); setImagesSrc([]); setCurrentShot(0); setCountdown(3); setAppState('CAMERA'); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform='scale(1)'}>
+              <div onClick={() => { setCaptureMode(3); setSelectedFrame(FRAMES.find(f => f.id === 'f_none') || FRAMES[0]); setImagesSrc([]); setCurrentShot(0); setCountdown(5); setAppState('CAMERA'); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform='scale(1)'}>
                 <div style={{ width: '140px', height: '180px', backgroundColor: '#e0e0e0', borderRadius: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '8px', padding: '10px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', border: '3px solid #ccc', boxSizing: 'border-box' }}>
                    <div style={{ backgroundColor: '#fff', borderRadius: '3px' }}></div>
                    <div style={{ backgroundColor: '#fff', borderRadius: '3px' }}></div>
@@ -1115,7 +1139,7 @@ function App() {
                 <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#4a4a4a' }}>3 Collage Selfie</span>
               </div>
 
-              <div onClick={() => { setCaptureMode(4); setSelectedFrame(FRAMES.find(f => f.id === 'f_none') || FRAMES[0]); setImagesSrc([]); setCurrentShot(0); setCountdown(3); setAppState('CAMERA'); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform='scale(1)'}>
+              <div onClick={() => { setCaptureMode(4); setSelectedFrame(FRAMES.find(f => f.id === 'f_none') || FRAMES[0]); setImagesSrc([]); setCurrentShot(0); setCountdown(5); setAppState('CAMERA'); }} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', transition: 'transform 0.2s' }} onMouseOver={e => e.currentTarget.style.transform='scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform='scale(1)'}>
                 <div style={{ width: '140px', height: '180px', backgroundColor: '#e0e0e0', borderRadius: '10px', display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: '8px', padding: '10px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', border: '3px solid #ccc', boxSizing: 'border-box' }}>
                      <div style={{ backgroundColor: '#fff', borderRadius: '3px' }}></div>
                      <div style={{ backgroundColor: '#fff', borderRadius: '3px' }}></div>
