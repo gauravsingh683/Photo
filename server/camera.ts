@@ -22,7 +22,7 @@ export async function captureDSLRPhoto(outputDir: string): Promise<string> {
        try {
          console.log('Rotating captured image 90 degrees...');
          const winPath = execSync(`wslpath -w "${outputPath}"`).toString().trim();
-         const rotateCmd = `powershell.exe -Command "[Reflection.Assembly]::LoadWithPartialName('System.Drawing'); $img = [System.Drawing.Image]::FromFile('${winPath}'); $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate90FlipNone); $img.Save('${winPath}'); $img.Dispose();"`;
+          const rotateCmd = `powershell.exe -Command "[Reflection.Assembly]::LoadWithPartialName('System.Drawing'); $img = [System.Drawing.Image]::FromFile('${winPath}'); $img.RotateFlip([System.Drawing.RotateFlipType]::Rotate90FlipNone); $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageDecoders() | Where-Object { $_.FormatID -eq [System.Drawing.Imaging.ImageFormat]::Jpeg.Guid }; $encoder = [System.Drawing.Imaging.Encoder]::Quality; $encoderParams = New-Object System.Drawing.Imaging.EncoderParameters(1); $encoderParams.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter($encoder, 100); $img.Save('${winPath}', $codec, $encoderParams); $img.Dispose();"`;
          await execAsync(rotateCmd);
          console.log('Image rotated successfully:', winPath);
        } catch (rotateErr: any) {
