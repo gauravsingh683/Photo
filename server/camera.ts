@@ -9,24 +9,27 @@ export async function captureDSLRPhoto(outputDir: string): Promise<string> {
   const filename = `capture_${Date.now()}.jpg`;
   const outputPath = path.join(outputDir, filename);
   
+  // Define check paths for both WSL mounted drive and native Windows
+  const wslCmdPath = '/mnt/c/Program Files (x86)/digiCamControl/CameraControlCmd.exe';
+  const winCmdPath = 'C:\\Program Files (x86)\\digiCamControl\\CameraControlCmd.exe';
+
+  let resolvedPath = '';
+  if (fs.existsSync(wslCmdPath)) {
+    resolvedPath = `"${wslCmdPath}"`;
+  } else if (fs.existsSync(winCmdPath)) {
+    resolvedPath = `"${winCmdPath}"`;
+  }
+
+  if (!resolvedPath) {
+    throw new Error('digiCamControl is not installed on your Windows PC. Please download and install it from http://digicamcontrol.com/ to trigger your DSLR.');
+  }
+
   try {
-    // Attempt to use digiCamControl CLI (Standard Windows DSLR Software)
-    const cmdPath = `"C:\\Program Files (x86)\\digiCamControl\\CameraControlCmd.exe"`;
-    
-    // Check if digiCamControl is installed
-    if (fs.existsSync('C:\\Program Files (x86)\\digiCamControl\\CameraControlCmd.exe')) {
-       console.log('Triggering DSLR...');
-       await execAsync(`${cmdPath} /capture /filename "${outputPath}"`);
-       return filename;
-    } else {
-       throw new Error('digiCamControl is not installed. DSLR cannot be triggered.');
-    }
+    console.log('Triggering DSLR via:', resolvedPath);
+    await execAsync(`${resolvedPath} /capture /filename "${outputPath}"`);
+    return filename;
   } catch (error: any) {
     console.error('DSLR Capture Error:', error.message);
-    
-    // Fallback behavior: Generate a dummy image so the UI can proceed during testing
-    console.log('Using Fallback Camera Mode...');
-    fs.writeFileSync(outputPath, 'Mock Image Data (DSLR Disconnected)');
-    return filename;
+    throw new Error(`DSLR Shutter Trigger Failed: ${error.message}. Make sure your DSLR is connected via USB and powered on.`);
   }
 }
