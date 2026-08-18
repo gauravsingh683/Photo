@@ -24,8 +24,11 @@ function createWindow() {
   // Remove the default menu completely
   Menu.setApplicationMenu(null);
 
-  // Clear cache on launch to ensure the latest frontend updates are loaded
-  mainWindow.webContents.session.clearCache().then(() => {
+  // Clear cache and storage data on launch to force Electron to fetch the latest files from the server
+  Promise.all([
+    mainWindow.webContents.session.clearCache(),
+    mainWindow.webContents.session.clearStorageData()
+  ]).then(() => {
     mainWindow.loadURL('https://photobooth.woodcliff.co.in/');
   });
 

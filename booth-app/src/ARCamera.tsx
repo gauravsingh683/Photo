@@ -121,12 +121,9 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
       
       if (!canvasCtx || !offCtx || !canvasRef.current || !offscreenCanvasRef.current) return;
       
-      const targetWidth = results.image.height;
-      const targetHeight = results.image.width;
-      
-      if (canvasRef.current!.width !== targetWidth) {
-        canvasRef.current!.width = targetWidth;
-        canvasRef.current!.height = targetHeight;
+      if (canvasRef.current!.width !== results.image.width) {
+        canvasRef.current!.width = results.image.width;
+        canvasRef.current!.height = results.image.height;
         offscreenCanvasRef.current.width = results.image.width;
         offscreenCanvasRef.current.height = results.image.height;
       }
@@ -134,16 +131,12 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
       canvasCtx.save();
       // Mirror image
       canvasCtx.scale(-1, 1);
-      canvasCtx.translate(-targetWidth, 0);
-
-      // Rotate 90 degrees clockwise
-      canvasCtx.translate(targetWidth / 2, targetHeight / 2);
-      canvasCtx.rotate(90 * Math.PI / 180);
+      canvasCtx.translate(-canvasRef.current!.width, 0);
 
       // Draw base image with filter
       const currentFilter = filterRef.current;
       canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
-      canvasCtx.drawImage(results.image, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
+      canvasCtx.drawImage(results.image, 0, 0, canvasRef.current!.width, canvasRef.current!.height);
       
       // Face Smoothing
       if (results.multiFaceLandmarks && (currentFilter.includes('brightness') || currentFilter.includes('blur'))) {
@@ -219,7 +212,8 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
           if (video.paused) {
             video.play().catch(e => console.error("Error playing video:", e));
           }
-          const needsBeauty = false; // Disabled FaceMesh to prevent CPU lag and support 90-degree camera rotation
+          const currentFilter = filterRef.current;
+          const needsBeauty = currentFilter.includes('brightness') || currentFilter.includes('blur');
           
           if (needsBeauty && isFaceMeshLoadedRef.current && faceMeshRef.current) {
             await faceMeshRef.current.send({ image: video });
@@ -227,39 +221,16 @@ export const ARCamera = forwardRef(({ filterCSS }: { filterCSS: string }, ref) =
             // Fast path: bypass ML inference and draw directly
             const canvasCtx = canvasRef.current?.getContext('2d');
             if (canvasCtx && canvasRef.current) {
-              const targetWidth = video.videoHeight;
-              const targetHeight = video.videoWidth;
-              
-              if (targetWidth > 0 && targetHeight > 0) {
-                if (canvasRef.current.width !== targetWidth || canvasRef.current.height !== targetHeight) {
-                  canvasRef.current.width = targetWidth;
-                  canvasRef.current.height = targetHeight;
-                }
-                
-                canvasCtx.save();
-                canvasCtx.clearRect(0, 0, targetWidth, targetHeight);
-                
-                // Translate to center of canvas
-                canvasCtx.translate(targetWidth / 2, targetHeight / 2);
-                
-                // Rotate 90 degrees clockwise
-                canvasCtx.rotate(90 * Math.PI / 180);
-                
-                // Mirror horizontally (relative to rotated preview frame)
-                canvasCtx.scale(-1, 1);
-                
-                canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
-                
-                // Draw video centered at origin
-                canvasCtx.drawImage(video, -targetHeight / 2, -targetWidth / 2, targetHeight, targetWidth);
-                
-                canvasCtx.restore();
-  
-                // Draw debug indicator in screen coordinates
-                canvasCtx.fillStyle = "#ff0000";
-                canvasCtx.font = "bold 24px monospace";
-                canvasCtx.fillText("DEBUG: Rotated 90 deg", 20, 40);
+              if (canvasRef.current.width !== video.videoWidth) {
+                canvasRef.current.width = video.videoWidth;
+                canvasRef.current.height = video.videoHeight;
               }
+              canvasCtx.save();
+              canvasCtx.scale(-1, 1);
+              canvasCtx.translate(-canvasRef.current.width, 0);
+              canvasCtx.filter = currentFilter === 'none' ? 'none' : currentFilter;
+              canvasCtx.drawImage(video, 0, 0, canvasRef.current.width, canvasRef.current.height);
+              canvasCtx.restore();
             }
           }
         }
