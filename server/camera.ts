@@ -5,7 +5,7 @@ import util from 'util';
 
 const execAsync = util.promisify(exec);
 
-export async function captureDSLRPhoto(outputDir: string): Promise<string> {
+export async function captureDSLRPhoto(outputDir: string): Promise<{ filename: string; useWebcamFallback: boolean }> {
   const filename = `capture_${Date.now()}.jpg`;
   const outputPath = path.join(outputDir, filename);
   
@@ -20,14 +20,16 @@ export async function captureDSLRPhoto(outputDir: string): Promise<string> {
     resolvedPath = `"${winCmdPath}"`;
   }
 
+  // Auto-Detect: If digiCamControl is not installed, signal client to use webcam fallback
   if (!resolvedPath) {
-    throw new Error('digiCamControl is not installed on your Windows PC. Please download and install it from http://digicamcontrol.com/ to trigger your DSLR.');
+    console.log('digiCamControl is not installed. Auto-detect signaling Web Camera fallback mode.');
+    return { filename: '', useWebcamFallback: true };
   }
 
   try {
     console.log('Triggering DSLR via:', resolvedPath);
     await execAsync(`${resolvedPath} /capture /filename "${outputPath}"`);
-    return filename;
+    return { filename: filename, useWebcamFallback: false };
   } catch (error: any) {
     console.error('DSLR Capture Error:', error.message);
     throw new Error(`DSLR Shutter Trigger Failed: ${error.message}. Make sure your DSLR is connected via USB and powered on.`);

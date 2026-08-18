@@ -31,7 +31,6 @@ export default function App() {
   const [selectedImage, setSelectedImage] = useState<Frame | null>(null);
   const [printSize, setPrintSize] = useState('4x6');
   const [whatsappSettings, setWhatsappSettings] = useState({ apiUrl: '', apiKey: '', senderNumber: '' });
-  const [cameraMode, setCameraMode] = useState<'dslr' | 'webcam'>('dslr');
   
   const [licenses, setLicenses] = useState<Record<string, any>>({});
   const [licenseCodeInput, setLicenseCodeInput] = useState('');
@@ -52,7 +51,6 @@ export default function App() {
       if (dataSettings) {
         if (dataSettings.printSize) setPrintSize(dataSettings.printSize);
         if (dataSettings.whatsapp) setWhatsappSettings(dataSettings.whatsapp);
-        if (dataSettings.cameraMode) setCameraMode(dataSettings.cameraMode);
       }
       
       const resLicenses = await fetch('/api/licenses');
@@ -172,7 +170,7 @@ export default function App() {
 
   const saveSettings = async (updates: any) => {
     try {
-      const currentSettings = { printSize, whatsapp: whatsappSettings, cameraMode, ...updates };
+      const currentSettings = { printSize, whatsapp: whatsappSettings, ...updates };
       await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,7 +178,6 @@ export default function App() {
       });
       if (updates.printSize) setPrintSize(updates.printSize);
       if (updates.whatsapp) setWhatsappSettings(updates.whatsapp);
-      if (updates.cameraMode) setCameraMode(updates.cameraMode);
       alert('Settings saved successfully!');
     } catch (e) {
       alert('Error saving settings');
@@ -477,7 +474,7 @@ export default function App() {
         {activeTab === 'print' && (
           <div style={{ width: '100%' }}>
             <h1 style={{ fontSize: 'var(--h1-size)', color: themeNavy, marginBottom: '30px', fontWeight: 700 }}>Print Configuration</h1>
-            <div style={{ backgroundColor: 'white', padding: 'var(--card-padding)', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0', marginBottom: '30px' }}>
+            <div style={{ backgroundColor: 'white', padding: 'var(--card-padding)', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
               <h3 style={{ margin: '0 0 20px 0', color: themeNavy, fontWeight: 600, fontSize: 'var(--body-text-large)' }}>Select Paper Size</h3>
               <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
                 {['4x6', '5x7', '2x6', '8x10'].map(size => (
@@ -489,26 +486,6 @@ export default function App() {
                 ))}
               </div>
               <button onClick={() => saveSettings({ printSize })} style={{ padding: '14px 30px', backgroundColor: themeNavy, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--body-text-base)' }}>Save Print Settings</button>
-            </div>
-
-            <div style={{ backgroundColor: 'white', padding: 'var(--card-padding)', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', border: '1px solid #e2e8f0' }}>
-              <h3 style={{ margin: '0 0 20px 0', color: themeNavy, fontWeight: 600, fontSize: 'var(--body-text-large)' }}>Camera Input Mode</h3>
-              <p style={{ color: '#64748b', fontSize: 'var(--body-text-base)', marginBottom: '20px', marginTop: '-10px' }}>
-                Choose whether the photo booth uses a Canon DSLR (requires USB connection & digiCamControl) or the built-in webcam.
-              </p>
-              <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
-                {[
-                  { value: 'dslr', label: 'Canon DSLR Camera', desc: 'Uses USB control & digiCamControl' },
-                  { value: 'webcam', label: 'Web Camera (Selfie)', desc: 'Uses built-in web camera stream' }
-                ].map(mode => (
-                  <label key={mode.value} style={{ flex: 1, padding: '20px', border: cameraMode === mode.value ? `2px solid ${themeCyan}` : '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer', textAlign: 'center', backgroundColor: cameraMode === mode.value ? '#e0f2fe' : 'white' }}>
-                    <input type="radio" name="cameraMode" value={mode.value} checked={cameraMode === mode.value} onChange={(e) => setCameraMode(e.target.value as any)} style={{ display: 'none' }} />
-                    <div style={{ fontSize: 'var(--body-text-large)', fontWeight: 700, color: themeNavy }}>{mode.label}</div>
-                    <div style={{ fontSize: 'var(--body-text-small)', color: '#64748b', marginTop: '5px', fontWeight: 500 }}>{mode.desc}</div>
-                  </label>
-                ))}
-              </div>
-              <button onClick={() => saveSettings({ cameraMode })} style={{ padding: '14px 30px', backgroundColor: themeNavy, color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--body-text-base)' }}>Save Camera Settings</button>
             </div>
           </div>
         )}

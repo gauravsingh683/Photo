@@ -112,13 +112,14 @@ app.post('/api/hardware/capture', async (req, res) => {
     }
     
     // Trigger the actual DSLR hardware via the camera module
-    const filename = await captureDSLRPhoto(uploadDir);
+    const result = await captureDSLRPhoto(uploadDir);
     
     res.json({
       success: true,
-      filename: filename,
-      url: `/uploads/${filename}`,
-      message: 'Hardware capture successful'
+      useWebcamFallback: result.useWebcamFallback,
+      filename: result.filename,
+      url: result.filename ? `/uploads/${result.filename}` : '',
+      message: 'Hardware capture request completed'
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
