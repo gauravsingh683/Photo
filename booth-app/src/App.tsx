@@ -646,6 +646,24 @@ function App() {
   const [isLicensed, setIsLicensed] = useState(true); // default true until checked
   const [selfieCount, setSelfieCount] = useState(0);
   const [selectedPrinter, setSelectedPrinter] = useState('');
+  const [cameraMode, setCameraMode] = useState<'dslr' | 'webcam'>('dslr');
+
+  // Load settings on mount to retrieve camera mode config
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        const data = await response.json();
+        if (data && data.cameraMode) {
+          setCameraMode(data.cameraMode);
+          console.log("Loaded camera mode from settings:", data.cameraMode);
+        }
+      } catch (e) {
+        console.error("Failed to load settings:", e);
+      }
+    };
+    loadSettings();
+  }, []);
 
   const logToServer = async (message: string, level = 'INFO') => {
     try {
@@ -975,6 +993,37 @@ function App() {
 
   const capture = useCallback(async () => {
     setAppState('PROCESSING'); // Show processing state while DSLR is capturing
+    
+    // Webcam mode handler (in-browser capture)
+    if (cameraMode === 'webcam') {
+      try {
+        console.log("Triggering Web Camera Capture...");
+        const image = webcamRef.current?.getScreenshot();
+        if (image) {
+          setImagesSrc(prev => {
+            const newImages = [...prev, image];
+            if (newImages.length < captureMode) {
+              setCurrentShot(newImages.length);
+              setCountdown(5);
+              setAppState('CAMERA');
+              return newImages;
+            } else {
+              setAppState('PREVIEW');
+              return newImages;
+            }
+          });
+        } else {
+          throw new Error("Failed to capture image screenshot from web camera.");
+        }
+      } catch (err: any) {
+        console.error("Webcam capture failed:", err);
+        alert(`Capture Error: ${err.message || err}`);
+        setAppState('CAMERA');
+      }
+      return;
+    }
+
+    // DSLR mode handler
     try {
       console.log("Triggering backend DSLR capture...");
       const res = await fetch('/api/hardware/capture', { method: 'POST' });
@@ -1004,7 +1053,7 @@ function App() {
       alert(`Hardware Connection Error: Failed to communicate with DSLR capture server. Make sure the backend server is running.`);
       setAppState('CAMERA');
     }
-  }, [webcamRef, captureMode]);
+  }, [webcamRef, captureMode, cameraMode]);
 
   const startCountdown = () => {
     setCountdown(5);
