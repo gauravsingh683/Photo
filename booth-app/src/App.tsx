@@ -977,7 +977,8 @@ function App() {
     setAppState('PROCESSING'); // Show processing state while DSLR is capturing
 
     const triggerWebcamScreenshot = () => {
-      const image = webcamRef.current?.getScreenshot();
+      const canvas = document.querySelector('canvas');
+      const image = canvas?.toDataURL('image/jpeg', 1.0);
       if (image) {
         setImagesSrc(prev => {
           const newImages = [...prev, image];
